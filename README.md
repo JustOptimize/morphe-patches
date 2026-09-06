@@ -10,71 +10,38 @@ Patches for apps I like.
 
 ### How to use these patches
 
-Click here to add these patches to Morphe: https://morphe.software/add-source?github=xyz-user/xyz-patches
+Click here to add these patches to Morphe: https://morphe.software/add-source?github=JustOptimize/morphe-patches
 
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
+> **[v1.0.0](https://github.com/JustOptimize/morphe-patches/releases/tag/v1.0.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;12 patches total
+<details open>
+<summary>📦 Waze&nbsp;&nbsp;•&nbsp;&nbsp;12 patches</summary>
+<br>
 
-<!-- Do not modify this section by hand. The patch list is generated when release.yml creates a new release.
-     
-     If you wish for the patches list to be collapsed, then remove the word 'EXPANDED' from the comment tag above.
+**🎯 Supported versions:**
 
-     If you wish to manually keep this list updated then remove the PATCHES_START and PATCHES_END 
-     comment blocks entirely. -->
+| 5.21.90.800 |
+| :---: |
 
-#### A list of your patches will automatically be shown here after your first patches release is created.
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Alert Distances](#alert-distances) | Configures radar/camera and hazard alert announcement distances.<br>Writes all key variants (truncated _ + underscore + space) for resilience across versions.<br>Credits: Waze CGE Mod.<br>Official → default values (metres):<br>Accident 600→2000 | Alert 600→1000 | Police 600→1000 |<br>Freeways 2000→1200 | Highways 1000→900 | Streets 500→700 |<br>Hazard 600→500 | Heavy Traffic 600→3000 | Between Alerts 300→200 | • Accident alert (m)<br>• General alert (m)<br>• Police / camera alert (m)<br>• Enforcement — freeways (m)<br>• Enforcement — highways (m)<br>• Enforcement — streets (m)<br>• Hazard alert (m)<br>• Heavy traffic alert (m)<br>• Min between alerts (m) |
+| [AutoZoom](#autozoom) | Controls how aggressively the map zooms in/out based on driving speed.<br>Credits: Waze Chuppito Mod (Speed Factor 20, Gradient Speed Threshold 60). | • Speed factor<br>• Scale factor<br>• Max scale<br>• Gradient speed threshold (km/h) |
+| [Disable Ads](#disable-ads) | Suppresses all Waze ad systems via bundled preferences file:<br>• AdMob SDK (Ad_.*)<br>• Google Ads (Google_Ads.*)<br>• Ads Inventory Prediction<br>• ExternalPOI pins, coupons, popups (ExternalPO_ + Extern__POI both key variants)<br>• Search autocomplete server ads<br>Credits: Waze CGE Mod (ExternalPOI keys), Waze Chuppito (dual-key coverage). |  |
+| [Disable Advil Ad Requests](#disable-advil-ad-requests) | Stubs AdvilRequest.getPageUrl() → "" so the Advil ad server receives no page URL and returns no ad content. Target: Lcom/waze/jni/protos/AdvilRequest;->getPageUrl() in classes6.dex (verified ✓). |  |
+| [Enlarged Speedometer](#enlarged-speedometer) | Increases speedometer digit size for better readability.<br>Default: speed < 100 → 28sp (orig 20sp), speed ≥ 100 → 21sp (orig 13sp).<br>Target: Lcom/waze/main_screen/h/b/d;->f() in classes6.dex (verified ✓).<br>Note: the two const/16 values are non-consecutive (goto between them) — scanned independently. | • Text size — speed below 100<br>• Text size — speed 100+ |
+| [Map Skin (Vitamin C)](#map-skin-vitamin-c) | Applies Chuppito's 'Vitamin C' map skin. All visual values configurable.<br>• Night: true black AMOLED background (saves battery, prevents burn-in)<br>• Day: warm beige background<br>• Larger font labels across the board<br>• Wider navigation arrow head for better visibility<br>Note: skin changes require a fresh APK install; updating an existing patched install may keep cached skin files.<br>Credits: ALEX02-GTT (skin design), Waze Chuppito Mod (integration). | • Night background color (hex)<br>• Day background color (hex)<br>• Font size — huge labels<br>• Font size — big labels<br>• Font size — medium labels<br>• Font size — small labels<br>• Nav arrow head width factor |
+| [Navigation & Map](#navigation-map) | Configures navigation and map behaviour:<br>• Nearing destination distance (Credits: CGE Mod)<br>• Android Auto head-up alert distances<br>• Map turn mode (auto-zoom to upcoming turn)<br>• Traffic bar minimum time threshold<br>• GPS icon visibility<br>• Route notifications (hazard, school zone) — both disabled by default<br>Credits: Waze CGE Mod (nearing destination), Waze Chuppito (remaining keys). | • Nearing destination distance (m)<br>• Android Auto head-up — normal roads (m)<br>• Android Auto head-up — freeways (m)<br>• Traffic bar min time in traffic (seconds)<br>• Show GPS icon on map<br>• Map turn mode (auto-zoom to turn)<br>• Permanent hazard route notification<br>• School zone route notification |
+| [Popup Suppression](#popup-suppression) | Prevents promotional and ad popups from appearing while driving.<br>Raises the minimum trigger speed to a near-impossible value so popups never appear.<br>Writes both Popup_ and Popu__ key variants for version resilience.<br>Credits: Waze Chuppito Mod. | • Min speed to show popups (MMSec)<br>• Fully stopped speed (MMSec)<br>• Min distance to show popup (m)<br>• Min reset scroll speed (MMSec)<br>• Delay after user interaction (seconds) |
+| [Radar Sound (Any Speed)](#radar-sound-any-speed) | Plays radar/speed camera sound alerts regardless of current speed. Official Waze only alerts when over the speed limit.<br>Patches CONFIG_VALUE_ALERTS_PLAY_SPEED_CAMERA_SOUND_BELOW_SPEED_LIMIT (ordinal 632) via setConfigValueBoolNTV on every server config sync.<br>Target: Lcom/waze/ConfigManager;->onConfigSyncedFromServer() in classes5.dex (verified ✓). |  |
+| [Report Speed Limit](#report-speed-limit) | Adds a Report option when tapping the speedometer to report wrong or missing speed limits. Not available in the official version.<br>Key: Map.Speedometer report speed enable_: 1 |  |
+| [Speed Limit Sign](#speed-limit-sign) | Sets the speed limit sign style shown on the map.<br>• us (default) — large circular US-style sign, more readable at a glance<br>• metric — smaller local-style sign<br>Key: Map.Speedometer sign style | • Sign style |
+| [Uncensored Radar / Camera Display](#uncensored-radar-camera-display) | Shows exact fixed and mobile speed camera locations, including those not yet in the official Waze radar zone. Enables enforcement alerts via preferences keys:<br>Alerts.Enable Enforcement Alert_ / Alert / Polic_ (truncated + full variants).<br>Credits: Waze CGE Mod. |  |
 
-&nbsp;
+</details>
 
-## 🚀 Getting development started
-
-To start using this template, follow these steps:
-
-1. [Setup](https://github.com/MorpheApp/morphe-documentation/blob/main/docs/morphe-development/README.md) your development environment including adding a GitHub PAT as described [here](https://github.com/MorpheApp/morphe-patcher/blob/main/docs/2_1_setup.md#-prepare-the-environment).
-2. [Create a new repository using this template](https://github.com/new?template_name=morphe-patches-template&template_owner=MorpheApp). Select create a new repository, and **enable 'Include all branches'** 
-3. Enable "Allow GitHub Actions to create and approve pull requests" in your repo Settings > Actions > General > Workflow permissions
-4. Update the [build.gradle.kts](patches/build.gradle.kts) file (Specifically, the 
-   [group of the project](patches/build.gradle.kts#L1), and the [About](patches/build.gradle.kts#L6-L11))
-5. Update the [README.md](README.md) file to be specific of your repo, and update the links in the [issue templates](.github/ISSUE_TEMPLATE).
-6. Choose a name for your patches project. Keep in mind you must use a name that does not 
-   imply authorship by the Morphe open source project. If unsure, then simply name these
-   patches after yourself ("UserXYZ Morphe patches"). See the [NOTICE](NOTICE) for details. 
-7. (Optional): Add `patches-bundle.png` to the project if you want a custom icon to show in
-   Morphe Manager instead of your GitHub profile avatar.
-
-🎉 You are now ready to start creating patches!
-
-## 🧑‍💻 Dev usage
-
-To develop and release your Patches using this template:
-
-- **Make all changes to the `dev` branch.**
-- For local development work build your patches using the gradle task `./gradlew buildAndroid` to generate the mpp file found in `patches/build/libs/patches-*.mpp`. Apply your patches locally using Morphe Desktop tool like any other patch bundle.
-- Always use [Semantic commit](https://kapeli.com/cheat_sheets/Semantic_Commits.docset/Contents/Resources/Documents/index) messages for commits. To keep it simple use only 3 commit message types: 
-  - `feat: Added a new feature`
-  - `fix: Some problem now fixed`
-  - `chore: Random change you do not want in the user facing changelog`
-- Commits of `fix:` and `feat:` will automatically generate new pre-releases and `chore:` will not create a new release.
-- Users can apply your dev branch releases by enabling `pre-release` in Morphe Manager patch sources.
-- When your dev branch is ready, and you want a stable release, merge dev branch to main (do not squash, and only merge).
-- **Always use semantic release (release.yml)**. Do not manually upload or create releases by hand
-  because many files must be updated and release.yml handles everything.
-
-## 🤓 Tips
-- See the [patcher documentation](https://github.com/MorpheApp/morphe-patcher/blob/main/docs/1_patcher_intro.md) for more examples of creating patches and fingerprints.
-- Do not use AI to create new release scripts. The `release.yml` here already handles everything.
-  If you need omething custom with your releases then modify the existing `release.yml`
-  and `.releaserc` instead of writing everything new from scratch.
-- Do not manually edit or manually commit any generated files such as: `patches-list.json`,
-  `patches-bundle.json`, `CHANGELOG.md`.  These files will be automatically updated by `release.yml`.
-- Do not force push any semantic release commits as that will break all future releases.
-  If you need to fix a broken release, it's always easiest to create a new release instead of 
-  fixing an existing release.
-
-
-<!-- The patches end tag is intentionally placed here so the first release will clean up 
-     this readme of all developer instructions above. -->
 <!-- PATCHES_END -->
 
 ### 🛠️ Building locally

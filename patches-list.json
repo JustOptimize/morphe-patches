@@ -1,5 +1,724 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "0.0.0",
-  "patches": []
+  "version": "1.0.0",
+  "patches": [
+    {
+      "name": "Alert Distances",
+      "description": "Configures radar/camera and hazard alert announcement distances.\nWrites all key variants (truncated _ + underscore + space) for resilience across versions.\nCredits: Waze CGE Mod.\nOfficial → default values (metres):\nAccident 600→2000 | Alert 600→1000 | Police 600→1000 |\nFreeways 2000→1200 | Highways 1000→900 | Streets 500→700 |\nHazard 600→500 | Heavy Traffic 600→3000 | Between Alerts 300→200",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.waze",
+          "name": "Waze",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": "#33CCFF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "5.21.90.800",
+              "versionCodes": {
+                "ARM64_V8A": 1030712,
+                "ARMEABI_V7A": 1030712,
+                "X86_64": 1030712,
+                "X86": 1030712
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "accidentDist",
+          "title": "Accident alert (m)",
+          "description": "Official: 600m.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 2000,
+          "values": null
+        },
+        {
+          "key": "alertDist",
+          "title": "General alert (m)",
+          "description": "Official: 600m.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 1000,
+          "values": null
+        },
+        {
+          "key": "policeDist",
+          "title": "Police / camera alert (m)",
+          "description": "Official: 600m.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 1000,
+          "values": null
+        },
+        {
+          "key": "freewayDist",
+          "title": "Enforcement — freeways (m)",
+          "description": "Official: 2000m.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 1200,
+          "values": null
+        },
+        {
+          "key": "highwayDist",
+          "title": "Enforcement — highways (m)",
+          "description": "Official: 1000m.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 900,
+          "values": null
+        },
+        {
+          "key": "streetDist",
+          "title": "Enforcement — streets (m)",
+          "description": "Official: 500m.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 700,
+          "values": null
+        },
+        {
+          "key": "hazardDist",
+          "title": "Hazard alert (m)",
+          "description": "Official: 600m.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 500,
+          "values": null
+        },
+        {
+          "key": "heavyTrafDist",
+          "title": "Heavy traffic alert (m)",
+          "description": "Official: 600m.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 3000,
+          "values": null
+        },
+        {
+          "key": "betweenDist",
+          "title": "Min between alerts (m)",
+          "description": "Official: 300m.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 200,
+          "values": null
+        }
+      ]
+    },
+    {
+      "name": "AutoZoom",
+      "description": "Controls how aggressively the map zooms in/out based on driving speed.\nCredits: Waze Chuppito Mod (Speed Factor 20, Gradient Speed Threshold 60).",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.waze",
+          "name": "Waze",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": "#33CCFF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "5.21.90.800",
+              "versionCodes": {
+                "ARM64_V8A": 1030712,
+                "ARMEABI_V7A": 1030712,
+                "X86_64": 1030712,
+                "X86": 1030712
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "speedFactor",
+          "title": "Speed factor",
+          "description": "Higher = more zoom-out at speed. Official: 10.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 20,
+          "values": null
+        },
+        {
+          "key": "scaleFactor",
+          "title": "Scale factor",
+          "description": "Overall zoom scale multiplier. Official: 25.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 25,
+          "values": null
+        },
+        {
+          "key": "maxScale",
+          "title": "Max scale",
+          "description": "Maximum zoom-out scale. Official: 8000.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 8000,
+          "values": null
+        },
+        {
+          "key": "gradientSpeed",
+          "title": "Gradient speed threshold (km/h)",
+          "description": "Zoom gradient activates above this speed. Official: 30.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 60,
+          "values": null
+        }
+      ]
+    },
+    {
+      "name": "Disable Ads",
+      "description": "Suppresses all Waze ad systems via bundled preferences file:\n• AdMob SDK (Ad_.*)\n• Google Ads (Google_Ads.*)\n• Ads Inventory Prediction\n• ExternalPOI pins, coupons, popups (ExternalPO_ + Extern__POI both key variants)\n• Search autocomplete server ads\nCredits: Waze CGE Mod (ExternalPOI keys), Waze Chuppito (dual-key coverage).",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.waze",
+          "name": "Waze",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": "#33CCFF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "5.21.90.800",
+              "versionCodes": {
+                "ARM64_V8A": 1030712,
+                "ARMEABI_V7A": 1030712,
+                "X86_64": 1030712,
+                "X86": 1030712
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Disable Advil Ad Requests",
+      "description": "Stubs AdvilRequest.getPageUrl() → \"\" so the Advil ad server receives no page URL and returns no ad content. Target: Lcom/waze/jni/protos/AdvilRequest;->getPageUrl() in classes6.dex (verified ✓).",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.waze",
+          "name": "Waze",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": "#33CCFF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "5.21.90.800",
+              "versionCodes": {
+                "ARM64_V8A": 1030712,
+                "ARMEABI_V7A": 1030712,
+                "X86_64": 1030712,
+                "X86": 1030712
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enlarged Speedometer",
+      "description": "Increases speedometer digit size for better readability.\nDefault: speed < 100 → 28sp (orig 20sp), speed ≥ 100 → 21sp (orig 13sp).\nTarget: Lcom/waze/main_screen/h/b/d;->f() in classes6.dex (verified ✓).\nNote: the two const/16 values are non-consecutive (goto between them) — scanned independently.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.waze",
+          "name": "Waze",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": "#33CCFF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "5.21.90.800",
+              "versionCodes": {
+                "ARM64_V8A": 1030712,
+                "ARMEABI_V7A": 1030712,
+                "X86_64": 1030712,
+                "X86": 1030712
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "smallTextSize",
+          "title": "Text size — speed below 100",
+          "description": "Speedometer font size when speed < 100. Default: 28sp (original: 20sp).",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 28,
+          "values": null
+        },
+        {
+          "key": "largeTextSize",
+          "title": "Text size — speed 100+",
+          "description": "Speedometer font size when speed ≥ 100. Default: 21sp (original: 13sp).",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 21,
+          "values": null
+        }
+      ]
+    },
+    {
+      "name": "Map Skin (Vitamin C)",
+      "description": "Applies Chuppito's 'Vitamin C' map skin. All visual values configurable.\n• Night: true black AMOLED background (saves battery, prevents burn-in)\n• Day: warm beige background\n• Larger font labels across the board\n• Wider navigation arrow head for better visibility\nNote: skin changes require a fresh APK install; updating an existing patched install may keep cached skin files.\nCredits: ALEX02-GTT (skin design), Waze Chuppito Mod (integration).",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.waze",
+          "name": "Waze",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": "#33CCFF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "5.21.90.800",
+              "versionCodes": {
+                "ARM64_V8A": 1030712,
+                "ARMEABI_V7A": 1030712,
+                "X86_64": 1030712,
+                "X86": 1030712
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "nightBg",
+          "title": "Night background color (hex)",
+          "description": "Default: 000000 (true black, AMOLED). Original Waze: 1a1a2e.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "000000",
+          "values": null
+        },
+        {
+          "key": "dayBg",
+          "title": "Day background color (hex)",
+          "description": "Default: ebe7dd (warm beige). Original Waze: f7f3eb.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "ebe7dd",
+          "values": null
+        },
+        {
+          "key": "fontHuge",
+          "title": "Font size — huge labels",
+          "description": "Default: 18 (original: 14).",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 18,
+          "values": null
+        },
+        {
+          "key": "fontBig",
+          "title": "Font size — big labels",
+          "description": "Default: 14 (original: 12).",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 14,
+          "values": null
+        },
+        {
+          "key": "fontMedium",
+          "title": "Font size — medium labels",
+          "description": "Default: 12 (original: 10).",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 12,
+          "values": null
+        },
+        {
+          "key": "fontSmall",
+          "title": "Font size — small labels",
+          "description": "Default: 10 (original: 8).",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 10,
+          "values": null
+        },
+        {
+          "key": "navArrow",
+          "title": "Nav arrow head width factor",
+          "description": "Default: 10.0 (original: 3.0). Wider = more visible chevron.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "10.0",
+          "values": null
+        }
+      ]
+    },
+    {
+      "name": "Navigation & Map",
+      "description": "Configures navigation and map behaviour:\n• Nearing destination distance (Credits: CGE Mod)\n• Android Auto head-up alert distances\n• Map turn mode (auto-zoom to upcoming turn)\n• Traffic bar minimum time threshold\n• GPS icon visibility\n• Route notifications (hazard, school zone) — both disabled by default\nCredits: Waze CGE Mod (nearing destination), Waze Chuppito (remaining keys).",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.waze",
+          "name": "Waze",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": "#33CCFF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "5.21.90.800",
+              "versionCodes": {
+                "ARM64_V8A": 1030712,
+                "ARMEABI_V7A": 1030712,
+                "X86_64": 1030712,
+                "X86": 1030712
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "nearingDestDist",
+          "title": "Nearing destination distance (m)",
+          "description": "0 = silent arrival. Official: ~500m.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 0,
+          "values": null
+        },
+        {
+          "key": "aaHeadUpNormal",
+          "title": "Android Auto head-up — normal roads (m)",
+          "description": "Official: 800m.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 1200,
+          "values": null
+        },
+        {
+          "key": "aaHeadUpFreeway",
+          "title": "Android Auto head-up — freeways (m)",
+          "description": "Official: 1000m.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 1300,
+          "values": null
+        },
+        {
+          "key": "trafficBarMinTime",
+          "title": "Traffic bar min time in traffic (seconds)",
+          "description": "Official: 300s.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 180,
+          "values": null
+        },
+        {
+          "key": "showGpsIcon",
+          "title": "Show GPS icon on map",
+          "description": "Official: yes.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "no",
+          "values": {
+            "Hidden (less clutter)": "no",
+            "Visible": "yes"
+          }
+        },
+        {
+          "key": "mapTurnMode",
+          "title": "Map turn mode (auto-zoom to turn)",
+          "description": "Default: enabled.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "1",
+          "values": {
+            "Enabled": "1",
+            "Disabled": "0"
+          }
+        },
+        {
+          "key": "hazardNotif",
+          "title": "Permanent hazard route notification",
+          "description": "Default: disabled (0).",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "0",
+          "values": {
+            "Disabled": "0",
+            "Enabled": "1"
+          }
+        },
+        {
+          "key": "schoolNotif",
+          "title": "School zone route notification",
+          "description": "Default: disabled (0).",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "0",
+          "values": {
+            "Disabled": "0",
+            "Enabled": "1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Popup Suppression",
+      "description": "Prevents promotional and ad popups from appearing while driving.\nRaises the minimum trigger speed to a near-impossible value so popups never appear.\nWrites both Popup_ and Popu__ key variants for version resilience.\nCredits: Waze Chuppito Mod.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.waze",
+          "name": "Waze",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": "#33CCFF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "5.21.90.800",
+              "versionCodes": {
+                "ARM64_V8A": 1030712,
+                "ARMEABI_V7A": 1030712,
+                "X86_64": 1030712,
+                "X86": 1030712
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "minSpeed",
+          "title": "Min speed to show popups (MMSec)",
+          "description": "Default 999999 = never. Official: 0 (always shows).",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 999999,
+          "values": null
+        },
+        {
+          "key": "fullyStoppedSpeed",
+          "title": "Fully stopped speed (MMSec)",
+          "description": "-1 = disable stopped trigger. Official: 0.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": -1,
+          "values": null
+        },
+        {
+          "key": "minDistance",
+          "title": "Min distance to show popup (m)",
+          "description": "Official: 100m.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 1,
+          "values": null
+        },
+        {
+          "key": "minResetScrollSpeed",
+          "title": "Min reset scroll speed (MMSec)",
+          "description": "Speed at which scroll suppression resets. Official: 1400.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 7000,
+          "values": null
+        },
+        {
+          "key": "delayAfterInteraction",
+          "title": "Delay after user interaction (seconds)",
+          "description": "Seconds before popup can appear post-interaction. Official: 0.",
+          "required": false,
+          "type": "kotlin.Long",
+          "default": 1,
+          "values": null
+        }
+      ]
+    },
+    {
+      "name": "Radar Sound (Any Speed)",
+      "description": "Plays radar/speed camera sound alerts regardless of current speed. Official Waze only alerts when over the speed limit.\nPatches CONFIG_VALUE_ALERTS_PLAY_SPEED_CAMERA_SOUND_BELOW_SPEED_LIMIT (ordinal 632) via setConfigValueBoolNTV on every server config sync.\nTarget: Lcom/waze/ConfigManager;->onConfigSyncedFromServer() in classes5.dex (verified ✓).",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.waze",
+          "name": "Waze",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": "#33CCFF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "5.21.90.800",
+              "versionCodes": {
+                "ARM64_V8A": 1030712,
+                "ARMEABI_V7A": 1030712,
+                "X86_64": 1030712,
+                "X86": 1030712
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Report Speed Limit",
+      "description": "Adds a Report option when tapping the speedometer to report wrong or missing speed limits. Not available in the official version.\nKey: Map.Speedometer report speed enable_: 1",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.waze",
+          "name": "Waze",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": "#33CCFF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "5.21.90.800",
+              "versionCodes": {
+                "ARM64_V8A": 1030712,
+                "ARMEABI_V7A": 1030712,
+                "X86_64": 1030712,
+                "X86": 1030712
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Speed Limit Sign",
+      "description": "Sets the speed limit sign style shown on the map.\n• us (default) — large circular US-style sign, more readable at a glance\n• metric — smaller local-style sign\nKey: Map.Speedometer sign style",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.waze",
+          "name": "Waze",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": "#33CCFF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "5.21.90.800",
+              "versionCodes": {
+                "ARM64_V8A": 1030712,
+                "ARMEABI_V7A": 1030712,
+                "X86_64": 1030712,
+                "X86": 1030712
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "signStyle",
+          "title": "Sign style",
+          "description": "us = large circular US-style (recommended). metric = small local-style.",
+          "required": false,
+          "type": "kotlin.String",
+          "default": "us",
+          "values": {
+            "US circular — large, more readable": "us",
+            "Local metric — small": "metric"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Uncensored Radar / Camera Display",
+      "description": "Shows exact fixed and mobile speed camera locations, including those not yet in the official Waze radar zone. Enables enforcement alerts via preferences keys:\nAlerts.Enable Enforcement Alert_ / Alert / Polic_ (truncated + full variants).\nCredits: Waze CGE Mod.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.waze",
+          "name": "Waze",
+          "description": null,
+          "apkFileType": null,
+          "appIconColor": "#33CCFF",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "5.21.90.800",
+              "versionCodes": {
+                "ARM64_V8A": 1030712,
+                "ARMEABI_V7A": 1030712,
+                "X86_64": 1030712,
+                "X86": 1030712
+              },
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    }
+  ]
 }
