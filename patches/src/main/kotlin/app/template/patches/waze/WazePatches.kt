@@ -2,12 +2,14 @@ package app.template.patches.waze
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.patch.ResourcePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.longOption
 import app.morphe.patcher.patch.rawResourcePatch
 import app.morphe.patcher.patch.stringOption
-import app.template.patches.shared.ensureRegisters
 import app.template.patches.shared.Constants.WAZE_COMPATIBILITY
+import app.template.patches.shared.ensureRegisters
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
@@ -17,6 +19,19 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 private fun resourceStream(path: String) =
     object {}.javaClass.classLoader.getResourceAsStream(path)
+        ?: throw PatchException(
+            "Bundled resource is missing from the patch jar: $path. " +
+                "Every path listed in SKIN_FILES must exist under patches/src/main/resources/."
+        )
+
+/**
+ * Copy a file bundled in this patch jar into the APK under `assets/res/`.
+ */
+private fun ResourcePatchContext.copyBundledResource(relPath: String) {
+    val target = get("assets/res/$relPath")
+    target.parentFile?.mkdirs()
+    resourceStream("waze/assets/res/$relPath").use { target.writeBytes(it.readBytes()) }
+}
 
 /**
  * Write or update a single key in the preferences file.
@@ -43,12 +58,8 @@ private fun java.io.File.writePrefs(pairs: List<Pair<String, Any>>) =
  * Ensure the bundled base preferences file is present.
  * Called by every patch that touches prefs so patches can work independently.
  */
-private fun app.morphe.patcher.patch.ResourcePatchContext.ensureBasePrefs() {
-    val prefFile = get("assets/res/preferences")
-    if (!prefFile.exists()) {
-        prefFile.parentFile?.mkdirs()
-        resourceStream("waze/assets/res/preferences")?.use { prefFile.writeBytes(it.readBytes()) }
-    }
+private fun ResourcePatchContext.ensureBasePrefs() {
+    if (!get("assets/res/preferences").exists()) copyBundledResource("preferences")
 }
 
 private fun normalizeLuaRgbHex(value: String?, fallback: String): String {
@@ -114,7 +125,7 @@ val wazeAdvilStubPatch = bytecodePatch(
 ) {
     compatibleWith(WAZE_COMPATIBILITY)
     execute {
-        runCatching { AdvilRequestGetPageUrlFingerprint.method }.getOrNull()?.apply {
+        AdvilRequestGetPageUrlFingerprint.method.apply {
             replaceInstruction(0, "const-string v0, \"\"")
         }
     }
@@ -169,7 +180,7 @@ val wazeRadarSoundAnySpeedPatch = bytecodePatch(
 ) {
     compatibleWith(WAZE_COMPATIBILITY)
     execute {
-        runCatching { ConfigManagerOnConfigSyncedFingerprint.method }.getOrNull()?.apply {
+        ConfigManagerOnConfigSyncedFingerprint.method.apply {
             ensureRegisters(3)
             addInstructions(
                 4,
@@ -275,7 +286,7 @@ val wazeSpeedometerTextSizePatch = bytecodePatch(
     )
 
     execute {
-        runCatching { SpeedometerUpdateFingerprint.method }.getOrNull()?.apply {
+        SpeedometerUpdateFingerprint.method.apply {
             val instrs = implementation!!.instructions.toList()
             var idx20 = -1; var idx13 = -1
             for (i in instrs.indices) {
@@ -287,10 +298,13 @@ val wazeSpeedometerTextSizePatch = bytecodePatch(
                     }
                 }
             }
-            if (idx20 >= 0 && idx13 >= 0) {
-                replaceInstruction(idx20, "const/16 v${(instrs[idx20] as OneRegisterInstruction).registerA}, ${(smallTextSize ?: 28L).toInt()}")
-                replaceInstruction(idx13, "const/16 v${(instrs[idx13] as OneRegisterInstruction).registerA}, ${(largeTextSize ?: 21L).toInt()}")
-            }
+            if (idx20 < 0 || idx13 < 0) throw PatchException(
+                "SpeedometerView text size literals not found. Expected a const/16 of 20 " +
+                    "followed by a const/16 of 13 in $name. Waze changed the layout."
+            )
+
+            replaceInstruction(idx20, "const/16 v${(instrs[idx20] as OneRegisterInstruction).registerA}, ${(smallTextSize ?: 28L).toInt()}")
+            replaceInstruction(idx13, "const/16 v${(instrs[idx13] as OneRegisterInstruction).registerA}, ${(largeTextSize ?: 21L).toInt()}")
         }
     }
 }
@@ -536,16 +550,6 @@ private val SKIN_FILES = listOf(
     "skins/default/experiment/skin_values.low_contrasts.lua",
 )
 
-private val CAR_MODELS = listOf(
-    "skins/default/cars/3d_arrow_nice.obj",
-    "skins/default/cars/ShadowSquare.obj",
-    "skins/default/cars/batmobile_model.obj",
-    "skins/default/cars/riddler_model.obj",
-    "skins/default/cars/arrow_model.obj",
-    "skins/default/cars/car_race.png",
-    "skins/default/cars/car_race@2x.png",
-)
-
 @Suppress("unused")
 val wazeBlackSkinPatch = rawResourcePatch(
     name = "Map Skin (Vitamin C)",
@@ -554,7 +558,6 @@ val wazeBlackSkinPatch = rawResourcePatch(
         "• Day: warm beige background\n" +
         "• Larger font labels across the board\n" +
         "• Wider navigation arrow head for better visibility\n" +
-        "• Custom car 3D models: Batmobile, Riddler, race car, 3D arrow\n" +
         "Note: skin changes require a fresh APK install; updating an existing patched install may keep cached skin files.\n" +
         "Credits: ALEX02-GTT (skin design), Waze Chuppito Mod (integration).",
     default = true
@@ -573,33 +576,25 @@ val wazeBlackSkinPatch = rawResourcePatch(
         val normalizedNightBg = normalizeLuaRgbHex(nightBg, "000000")
         val normalizedDayBg = normalizeLuaRgbHex(dayBg, "ebe7dd")
 
-        // Inject base skin Lua files and car models
-        for (relPath in SKIN_FILES) {
-            val f = get("assets/res/$relPath"); f.parentFile?.mkdirs()
-            resourceStream("waze/assets/res/$relPath")?.use { f.writeBytes(it.readBytes()) }
-        }
-        for (relPath in CAR_MODELS) {
-            val f = get("assets/res/$relPath"); f.parentFile?.mkdirs()
-            resourceStream("waze/assets/res/$relPath")?.use { f.writeBytes(it.readBytes()) }
-        }
+        SKIN_FILES.forEach { copyBundledResource(it) }
 
         // Night skin overrides
         get("assets/res/skins/default/skin_values.night.lua").let { f ->
-            if (f.exists()) f.writeText(f.readText()
+            f.writeText(f.readText()
                 .replace(Regex("map_background = rgb\\(0x[0-9a-fA-F]+\\)"), "map_background = rgb(0x$normalizedNightBg)")
                 .replace(Regex("map_missing = rgb\\(0x[0-9a-fA-F]+\\)"),    "map_missing = rgb(0x$normalizedNightBg)"))
         }
 
         // Day skin overrides
         get("assets/res/skins/default/skin_values.day.lua").let { f ->
-            if (f.exists()) f.writeText(f.readText()
+            f.writeText(f.readText()
                 .replace(Regex("map_background = rgb\\(0x[0-9a-fA-F]+\\)"), "map_background = rgb(0x$normalizedDayBg)")
                 .replace(Regex("map_missing = rgb\\(0x[0-9a-fA-F]+\\)"),    "map_missing = rgb(0x$normalizedDayBg)"))
         }
 
         // Font sizes and nav arrow overrides to skin_structure
         get("assets/res/skins/default/skin_structure.main.lua").let { f ->
-            if (f.exists()) f.writeText(f.readText()
+            f.writeText(f.readText()
                 .replace(Regex("\\bhuge\\s*=\\s*[0-9]+"),                        "huge = ${fontHuge   ?: 18L}")
                 .replace(Regex("\\bbig\\s*=\\s*[0-9]+,"),                         "big = ${fontBig     ?: 14L},")
                 .replace(Regex("\\bmedium\\s*=\\s*[0-9]+,"),                      "medium = ${fontMedium ?: 12L},")

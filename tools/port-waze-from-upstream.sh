@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
-# Re-fetch the Waze patch sources from rushiranpise/morphe-patches.
+# Diff the Waze patch sources against rushiranpise/morphe-patches.
 #
 # Upstream deleted these files on 2026-08-17 in commit 560c5ff ("fix: clean up"),
 # so UPSTREAM_REF pins the last commit that still had them. Nothing downstream of
-# that ref exists to track. Rerun this to diff our copy against the original and
-# see exactly which lines we changed.
+# that ref exists to track.
 #
-# Usage: tools/port-waze-from-upstream.sh [--check]
-#   (no args)  overwrite the local copies with upstream + our rewrites
-#   --check    diff instead of writing; non-zero exit means we have diverged
+# The Kotlin has deliberately diverged (see git log), so this only reports on it.
+# The resources are meant to stay byte-identical, so a resource diff is an error.
+#
+# Usage: tools/port-waze-from-upstream.sh [--restore-resources]
+#   (no args)            print every difference; exit 1 if a resource diverged
+#   --restore-resources  rewrite the resource files from upstream.
+#                        Never touches Kotlin, which would undo our fixes.
 
 set -euo pipefail
 
@@ -55,29 +58,40 @@ fetch() {
     curl -fsSL --retry 3 "$BASE/$1"
 }
 
-check=0
-[[ "${1:-}" == "--check" ]] && check=1
+restore=0
+[[ "${1:-}" == "--restore-resources" ]] && restore=1
 
-diverged=0
+if (( restore )); then
+    for f in "${RES_FILES[@]}"; do
+        mkdir -p "$ROOT/$(dirname "$f")"
+        fetch "$f" > "$ROOT/$f"
+        echo "restored: $f"
+    done
+    exit 0
+fi
+
+resource_diverged=0
 for f in "${KOTLIN_FILES[@]}" "${RES_FILES[@]}"; do
     case "$f" in
-        *.kt) body=$(fetch "$f" | rewrite) ;;
-        *)    body=$(fetch "$f") ;;
+        *.kt) upstream=$(fetch "$f" | rewrite) ;;
+        *)    upstream=$(fetch "$f") ;;
     esac
 
-    if (( check )); then
-        if ! printf '%s\n' "$body" | diff -q - "$ROOT/$f" >/dev/null 2>&1; then
-            echo "diverged: $f"
-            diverged=1
-        fi
-    else
-        mkdir -p "$ROOT/$(dirname "$f")"
-        printf '%s\n' "$body" > "$ROOT/$f"
-        echo "wrote: $f"
+    if printf '%s\n' "$upstream" | diff -q - "$ROOT/$f" >/dev/null 2>&1; then
+        continue
     fi
+
+    printf '%s\n' "$upstream" | diff -u --label "upstream/$f" - --label "$f" "$ROOT/$f" || true
+
+    case "$f" in
+        *.kt) ;;
+        *) resource_diverged=1 ;;
+    esac
 done
 
-if (( check )); then
-    (( diverged )) && exit 1
-    echo "all files match upstream @ $UPSTREAM_REF (modulo the import rewrite)"
+if (( resource_diverged )); then
+    echo "error: a resource diverged from upstream @ $UPSTREAM_REF" >&2
+    exit 1
 fi
+
+echo "resources match upstream @ $UPSTREAM_REF"
